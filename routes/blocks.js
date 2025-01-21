@@ -150,9 +150,7 @@ const blocks = [
 ];
 router.options('/', (req, res) => {
     res.header('Allow', 'GET, POST, OPTIONS')
-    res.header('Access-Control-Allow-Origin', '*'); // Toegestaan voor alle origins ??
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Toegestaande Methods zelfde als bij Allow
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Toegestaande headers ??
     res.status(204).send()
 })
 
@@ -216,9 +214,7 @@ router.post('/', async(req, res) => {
 
 router.options('/:id', (req, res) => {
     res.header('Allow', 'GET, PUT, OPTIONS, DELETE'); // Toegestane methodes
-    res.header('Access-Control-Allow-Origin', '*'); // Toegestaan voor alle origins
     res.header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS, DELETE'); // Toegestane methodes
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Toegestane headers
     res.status(204).send();
 })
 
@@ -242,9 +238,9 @@ router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { name, description, category, stackSize, gravity } = req.body;
 
-        // Controleer of er minstens één veld is om te updaten
-        if (!name && !description && !category && !stackSize && !gravity) {
-            return res.status(400).json({ error: 'At least one field is required to update' });
+        // Controleer of de verplichte velden zijn meegegeven
+        if (!name || !description || !category) {
+            return res.status(400).json({error: 'Missing required fields'});
         }
 
         // Zoek en update het item op basis van ID
@@ -284,7 +280,5 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete' });
     }
 });
-
-
 
 export default router;
