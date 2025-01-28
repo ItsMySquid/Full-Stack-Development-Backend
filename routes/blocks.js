@@ -171,46 +171,53 @@ router.get('/', async(req, res) => {
     }
 })
 
-router.post('/', async(req, res) => {
+router.post('/', async (req, res) => {
     try {
-        if (req.body.method && req.body.method === 'SEED') {
+        // Eerst controleren op de 'method' en zorgen dat deze correct is
+        if (req.body.method === 'SEED') {
             try {
-                if (req.body.reset) {
+                // Reset alleen uitvoeren als 'reset' true is
+                if (req.body.reset === 'true') {
                     await Block.deleteMany({});
-                    console.log('Database cleared')
+                    console.log('Database cleared');
                 }
 
                 await Block.insertMany(blocks);
-
-                res.status(201).json({message: `Created ${blocks.length} spots`})
-            }catch (e) {
+                res.status(201).json({message: `Created ${blocks.length} spots`});
+            } catch (e) {
                 console.log(e);
-                res.status(500).json({error: 'Failed to create'})
+                res.status(500).json({error: 'Failed to create'});
             }
         } else if (req.body.method && req.body.method !== 'SEED') {
-            res.status(400).json({ error: 'Invalid method please use SEED' });
-        } else  {
+            // Als de 'method' ongeldig is, stuur een foutmelding
+            res.status(400).json({ error: 'Invalid method, please use SEED' });
+        } else {
+            // Dit is de sectie voor het aanmaken van een nieuw block wanneer geen method wordt meegegeven
             const {name, description, category, stackSize, gravity} = req.body;
 
             if (!name || !description || !category) {
+                // Als een verplicht veld ontbreekt, geef een foutmelding
                 res.status(400).json({error: 'Missing required fields'});
-            } else {
-            const newBlock = await Block.create({
-                name: name,
-                description: description,
-                category: category,
-                stackSize: stackSize,
-                gravity: gravity,
-            });
-                res.status(201).json(newBlock);
+                return;  // Stop hier zodat de rest van de code niet verder wordt uitgevoerd
             }
+
+            // Maak het nieuwe block aan
+            const newBlock = await Block.create({
+                name,
+                description,
+                category,
+                stackSize,
+                gravity,
+            });
+
+            res.status(201).json(newBlock);
         }
 
-    }catch (e) {
+    } catch (e) {
         console.log(e);
-        res.status(500).json({error: 'Failed to create'})
+        res.status(500).json({error: 'Failed to create'});
     }
-})
+});
 
 router.options('/:id', (req, res) => {
     res.header('Allow', 'GET, PUT, OPTIONS, DELETE'); // Toegestane methodes
